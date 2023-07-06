@@ -8,7 +8,6 @@ import datetime
 import math
 import pickle
 import random
-import signal
 import sys
 import time
 
@@ -41,7 +40,6 @@ class Annealer(object):
     steps = 50000
     updates = 100
     copy_strategy = 'deepcopy'
-    user_exit = False
     save_state_on_exit = False
 
     # placeholders
@@ -57,8 +55,6 @@ class Annealer(object):
         else:
             raise ValueError('No valid values supplied for neither \
             initial_state nor load_state')
-
-        signal.signal(signal.SIGINT, self.set_user_exit)
 
     def save_state(self, fname=None):
         """Saves state to pickle"""
@@ -82,11 +78,6 @@ class Annealer(object):
     def energy(self):
         """Calculate state's energy"""
         pass
-
-    def set_user_exit(self, signum, frame):
-        """Raises the user_exit flag, further iterations are stopped
-        """
-        self.user_exit = True
 
     def set_schedule(self, schedule):
         """Takes the output from `auto` and sets the attributes
@@ -198,7 +189,7 @@ class Annealer(object):
             self.update(step, T, E, None, None)
 
         # Attempt moves to new states
-        while step < self.steps and not self.user_exit:
+        while step < self.steps:
             step += 1
             T = self.Tmax * math.exp(Tfactor * step / self.steps)
             dE = self.move()
