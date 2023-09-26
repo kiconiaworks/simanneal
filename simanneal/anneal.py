@@ -5,9 +5,11 @@ import copy
 import datetime
 import math
 import pickle
-import random
 import sys
 import time
+from typing import Optional
+
+import numpy as np
 
 
 def round_figures(x, n):
@@ -45,7 +47,9 @@ class Annealer(object):
     best_energy = None
     start = None
 
-    def __init__(self, initial_state=None, load_state=None):
+    def __init__(
+        self, initial_state=None, load_state=None, random_seed: Optional[int] = None
+    ):
         if initial_state is not None:
             self.state = self.copy_state(initial_state)
         elif load_state:
@@ -55,6 +59,7 @@ class Annealer(object):
                 "No valid values supplied for neither \
             initial_state nor load_state"
             )
+        self.rng = np.random.default_rng(random_seed)
 
     def save_state(self, fname=None):
         """Saves state to pickle"""
@@ -209,7 +214,7 @@ class Annealer(object):
             else:
                 E += dE
             trials += 1
-            if dE > 0.0 and math.exp(-dE / T) < random.random():
+            if dE > 0.0 and math.exp(-dE / T) < self.rng.random():
                 # Restore previous state
                 self.state = self.copy_state(prevState)
                 E = prevEnergy
@@ -256,7 +261,7 @@ class Annealer(object):
                     dE = E - prevEnergy
                 else:
                     E = prevEnergy + dE
-                if dE > 0.0 and math.exp(-dE / T) < random.random():
+                if dE > 0.0 and math.exp(-dE / T) < self.rng.random():
                     self.state = self.copy_state(prevState)
                     E = prevEnergy
                 else:
