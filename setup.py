@@ -13,8 +13,9 @@ useful for [combinatorial optimization](http://en.wikipedia.org/wiki/Combinatori
 problems defined by complex objective functions that rely on external data.
 """
 
+
 # Parse the version from the fiona module.
-with open('simanneal/__init__.py') as f:
+with open("simanneal/__init__.py") as f:
     for line in f:
         if line.find("__version__") >= 0:
             version = line.split("=")[1].strip()
@@ -23,13 +24,14 @@ with open('simanneal/__init__.py') as f:
             break
 
 setup(
-    name='simanneal',
+    name="simanneal",
     version=version,
-    description='Simulated Annealing in Python',
-    license='BSD',
-    author='Matthew Perry',
-    author_email='perrygeo@gmail.com',
-    url='https://github.com/perrygeo/simanneal',
+    description="Simulated Annealing in Python",
+    license="BSD",
+    author="Matthew Perry",
+    author_email="perrygeo@gmail.com",
+    url="https://github.com/perrygeo/simanneal",
     long_description=LONG_DESCRIPTION,
-    packages=['simanneal'],
-    install_requires=[])
+    packages=["simanneal"],
+    install_requires=[],
+)

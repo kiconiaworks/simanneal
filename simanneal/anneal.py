@@ -1,7 +1,5 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import abc
 import copy
 import datetime
@@ -20,9 +18,9 @@ def round_figures(x, n):
 def time_string(seconds):
     """Returns time in seconds as a string formatted HHHH:MM:SS."""
     s = int(round(seconds))  # round to nearest second
-    h, s = divmod(s, 3600)   # get hours and remainder
-    m, s = divmod(s, 60)     # split remainder into minutes and seconds
-    return '%4i:%02i:%02i' % (h, m, s)
+    h, s = divmod(s, 3600)  # get hours and remainder
+    m, s = divmod(s, 60)  # split remainder into minutes and seconds
+    return "%4i:%02i:%02i" % (h, m, s)
 
 
 class Annealer(object):
@@ -39,7 +37,7 @@ class Annealer(object):
     Tmin = 2.5
     steps = 50000
     updates = 100
-    copy_strategy = 'deepcopy'
+    copy_strategy = "deepcopy"
     save_state_on_exit = False
 
     # placeholders
@@ -53,8 +51,10 @@ class Annealer(object):
         elif load_state:
             self.load_state(load_state)
         else:
-            raise ValueError('No valid values supplied for neither \
-            initial_state nor load_state')
+            raise ValueError(
+                "No valid values supplied for neither \
+            initial_state nor load_state"
+            )
 
     def save_state(self, fname=None):
         """Saves state to pickle"""
@@ -66,7 +66,7 @@ class Annealer(object):
 
     def load_state(self, fname=None):
         """Loads state from pickle"""
-        with open(fname, 'rb') as fh:
+        with open(fname, "rb") as fh:
             self.state = pickle.load(fh)
 
     @abc.abstractmethod
@@ -80,12 +80,11 @@ class Annealer(object):
         pass
 
     def set_schedule(self, schedule):
-        """Takes the output from `auto` and sets the attributes
-        """
-        self.Tmax = schedule['tmax']
-        self.Tmin = schedule['tmin']
-        self.steps = int(schedule['steps'])
-        self.updates = int(schedule['updates'])
+        """Takes the output from `auto` and sets the attributes"""
+        self.Tmax = schedule["tmax"]
+        self.Tmin = schedule["tmin"]
+        self.steps = int(schedule["steps"])
+        self.updates = int(schedule["updates"])
 
     def copy_state(self, state):
         """Returns an exact copy of the provided state
@@ -95,16 +94,17 @@ class Annealer(object):
         * slice: use list slices (faster but only works if state is list-like)
         * method: use the state's copy() method
         """
-        if self.copy_strategy == 'deepcopy':
+        if self.copy_strategy == "deepcopy":
             return copy.deepcopy(state)
-        elif self.copy_strategy == 'slice':
+        elif self.copy_strategy == "slice":
             return state[:]
-        elif self.copy_strategy == 'method':
+        elif self.copy_strategy == "method":
             return state.copy()
         else:
-            raise RuntimeError('No implementation found for ' +
-                               'the self.copy_strategy "%s"' %
-                               self.copy_strategy)
+            raise RuntimeError(
+                "No implementation found for "
+                + 'the self.copy_strategy "%s"' % self.copy_strategy
+            )
 
     def update(self, *args, **kwargs):
         """Wrapper for internal update.
@@ -138,24 +138,32 @@ class Annealer(object):
 
         elapsed = time.time() - self.start
         if step == 0:
-            print('\n Temperature        Energy    Accept   Improve     Elapsed   Remaining',
-                  file=sys.stderr)
-            print('\r{Temp:12.5f}  {Energy:12.2f}                      {Elapsed:s}            '
-                  .format(Temp=T,
-                          Energy=E,
-                          Elapsed=time_string(elapsed)),
-                  file=sys.stderr, end="")
+            print(
+                "\n Temperature        Energy    Accept   Improve     Elapsed   Remaining",
+                file=sys.stderr,
+            )
+            print(
+                "\r{Temp:12.5f}  {Energy:12.2f}                      {Elapsed:s}            ".format(
+                    Temp=T, Energy=E, Elapsed=time_string(elapsed)
+                ),
+                file=sys.stderr,
+                end="",
+            )
             sys.stderr.flush()
         else:
             remain = (self.steps - step) * (elapsed / step)
-            print('\r{Temp:12.5f}  {Energy:12.2f}   {Accept:7.2%}   {Improve:7.2%}  {Elapsed:s}  {Remaining:s}'
-                  .format(Temp=T,
-                          Energy=E,
-                          Accept=acceptance,
-                          Improve=improvement,
-                          Elapsed=time_string(elapsed),
-                          Remaining=time_string(remain)),
-                  file=sys.stderr, end="")
+            print(
+                "\r{Temp:12.5f}  {Energy:12.2f}   {Accept:7.2%}   {Improve:7.2%}  {Elapsed:s}  {Remaining:s}".format(
+                    Temp=T,
+                    Energy=E,
+                    Accept=acceptance,
+                    Improve=improvement,
+                    Elapsed=time_string(elapsed),
+                    Remaining=time_string(remain),
+                ),
+                file=sys.stderr,
+                end="",
+            )
             sys.stderr.flush()
 
     def anneal(self):
@@ -172,8 +180,10 @@ class Annealer(object):
 
         # Precompute factor for exponential cooling from Tmax to Tmin
         if self.Tmin <= 0.0:
-            raise Exception('Exponential cooling requires a minimum "\
-                "temperature greater than zero.')
+            raise Exception(
+                'Exponential cooling requires a minimum "\
+                "temperature greater than zero.'
+            )
         Tfactor = -math.log(self.Tmax / self.Tmin)
 
         # Note initial state
@@ -215,8 +225,7 @@ class Annealer(object):
                     self.best_energy = E
             if self.updates > 1:
                 if (step // updateWavelength) > ((step - 1) // updateWavelength):
-                    self.update(
-                        step, T, E, accepts / trials, improves / trials)
+                    self.update(step, T, E, accepts / trials, improves / trials)
                     trials = accepts = improves = 0
 
         self.state = self.copy_state(self.best_state)
@@ -302,4 +311,4 @@ class Annealer(object):
         duration = round_figures(int(60.0 * minutes * step / elapsed), 2)
 
         # Don't perform anneal, just return params
-        return {'tmax': Tmax, 'tmin': Tmin, 'steps': duration, 'updates': self.updates}
+        return {"tmax": Tmax, "tmin": Tmin, "steps": duration, "updates": self.updates}
